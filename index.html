@@ -1,0 +1,621 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>DPPA Deal Room</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cabin:wght@400;500;600;700&family=Fredoka:wght@500;600;700&display=swap">
+<style>
+/* Layout: teal title band, one scene on stage at a time, scene tabs and controls below.
+   Palette and body font follow the in-house Allotrope slide look (mint ground, teal band, Cabin);
+   Fredoka is the playful display face for headings. Poker felt reuses the deep teal/green. */
+:root{
+  --bg:#E6F4F1; --surface:#FFFFFF; --band:#1D7E74; --band-ink:#FFFFFF;
+  --ink:#1C2624; --muted:#5D6B67; --green:#11665A; --deep:#0B4A41; --red:#E94438; --sage:#86CFC2;
+  --line:#C5DDD8; --soft:#D3EAE5; --track:#B9D6D0; --on-deep:#FFFFFF;
+  --font:"Cabin","Segoe UI","Microsoft YaHei","Noto Sans SC",system-ui,sans-serif;
+  --display:"Fredoka","Cabin","Segoe UI","Microsoft YaHei",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D2220; --surface:#143531; --ink:#E6F4F1; --muted:#9FB8B3; --green:#6FD3C2; --deep:#86CFC2; --red:#FF7A6E;
+    --line:#265049; --soft:#1B413B; --track:#2C5A52; --on-deep:#0D2220; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D2220; --surface:#143531; --ink:#E6F4F1; --muted:#9FB8B3; --green:#6FD3C2; --deep:#86CFC2; --red:#FF7A6E;
+  --line:#265049; --soft:#1B413B; --track:#2C5A52; --on-deep:#0D2220; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.45;margin:0;overflow-x:hidden;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column}
+.wrap{width:100%;flex:1}
+svg.ic{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.band{background:var(--band);color:var(--band-ink);border-radius:0 0 28px 0;box-shadow:0 3px 10px rgba(0,0,0,.18)}
+.band-in{max-width:1180px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.band-t{font-family:var(--display);font-weight:600;font-size:1.3rem;letter-spacing:.01em}
+.band-s{font-size:.82rem;opacity:.92}
+.band img{height:28px;width:auto;display:block;flex:none}
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px}
+.band,.controls{flex:none}
+.stage{position:relative;padding-block:24px 12px}
+.scene{display:none;position:relative}
+.scene.active{display:block}
+h1,h2,h3,p{margin:0}
+h1{font-family:var(--display);font-size:clamp(2.4rem,9vw,4.2rem);line-height:1.02;font-weight:700;color:var(--deep);text-wrap:balance}
+h2{font-family:var(--display);font-size:clamp(1.4rem,5.2vw,2.2rem);line-height:1.12;font-weight:600;color:var(--deep);text-wrap:balance}
+.scene-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.pill{background:var(--deep);color:var(--on-deep);border-radius:99px;padding:3px 12px;font-size:.85rem;font-weight:700;white-space:nowrap}
+.lead{font-size:clamp(1rem,2.6vw,1.15rem);max-width:62ch}
+.muted{color:var(--muted)}
+.small{font-size:.85rem}
+.card{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--deep);border-radius:8px;padding:12px 14px;min-width:0}
+.vn{font-size:.8rem;color:var(--muted)}
+.badge{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:var(--acc,var(--deep));color:#fff;font-size:24px;flex:none;box-shadow:0 3px 0 rgba(0,0,0,.18)}
+/* animation primitives */
+.a{opacity:0;animation:rise .6s ease-out both;animation-delay:calc(var(--d,0) * 1s)}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{opacity:0;transform:scale(.6)}70%{transform:scale(1.08)}100%{opacity:1;transform:none}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes wob{0%,100%{transform:rotate(-12deg) scale(1)}50%{transform:rotate(12deg) scale(1.15)}}
+@keyframes ring{from{stroke-dashoffset:0}to{stroke-dashoffset:214}}
+@keyframes glow{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 0 5px var(--soft)}}
+.scene.active .pop{opacity:0;animation:pop .55s ease-out both;animation-delay:calc(var(--d,0) * 1s)}
+.scene.active .bobber{animation:bob 2.6s ease-in-out infinite;animation-delay:calc(var(--d,0) * 1s)}
+.paused .scene *,.paused .scene *::before,.paused .scene *::after{animation-play-state:paused!important}
+/* scene 1 */
+.hero{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.fan{position:relative;width:150px;height:130px;flex:none}
+.fan i{position:absolute;left:50%;top:50%;width:64px;height:92px;margin:-46px 0 0 -32px;border-radius:8px;background:var(--surface);border:3px solid var(--deep);box-shadow:0 4px 0 rgba(0,0,0,.15);display:grid;place-items:center;font-style:normal;font-family:var(--display);font-weight:700;color:var(--red);font-size:1.5rem;transform:rotate(var(--r)) translateY(0);transform-origin:50% 120%;animation:fanout 1s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--d,0) * 1s)}
+@keyframes fanout{from{transform:rotate(0) translateY(0)}to{transform:rotate(var(--r)) translateY(-8px)}}
+.rail{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:36px;padding-top:26px}
+.rail::before{content:"";position:absolute;left:0;right:0;top:6px;height:4px;background:var(--track);border-radius:2px}
+.rail::after{content:"";position:absolute;left:0;top:6px;height:4px;width:100%;background:var(--green);border-radius:2px;transform-origin:left;animation:grow 4.6s ease-in-out .8s both}
+.rail span{position:relative;font-weight:700;font-size:.9rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.rail span::before{content:"";position:absolute;top:-26px;width:16px;height:16px;border-radius:50%;background:var(--surface);border:3px solid var(--green)}
+.title-lines{display:grid;gap:10px;margin-top:18px}
+/* scene 2 */
+.two{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:24px;align-items:start}
+.meet{position:relative;width:min(100%,300px);aspect-ratio:1;margin:0 auto 12px}
+.meet .tbl{position:absolute;inset:22%;border-radius:50%;background:radial-gradient(circle at 40% 35%,#1F8A7B,#11665A 60%,#0B4A41);border:6px solid #0B4A41;box-shadow:0 8px 0 rgba(0,0,0,.18)}
+.meet .seat{position:absolute;width:15%;aspect-ratio:1;display:grid;place-items:center;border-radius:50%;background:var(--acc);color:#fff;font-size:min(5.5vw,22px);left:calc(50% + var(--x) * 1% - 7.5%);top:calc(50% + var(--y) * 1% - 7.5%);box-shadow:0 3px 0 rgba(0,0,0,.2)}
+.meet .mc{position:absolute;width:11%;aspect-ratio:.7;border-radius:4px;background:#fff;border:2px solid #0B4A41;left:calc(50% - 5.5%);top:calc(50% - 8%);transform:rotate(var(--r)) translate(var(--tx),var(--ty));animation:mc 1.1s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--d,0) * 1s)}
+@keyframes mc{from{opacity:0;transform:rotate(0) translate(0,-170%)}to{opacity:1;transform:rotate(var(--r)) translate(var(--tx),var(--ty))}}
+.facts{display:grid;gap:10px;padding:0;margin:14px 0 0;list-style:none}
+.facts li{border-left:4px solid var(--red);padding:2px 0 2px 12px}
+.factories{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.fac{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:center}
+.fac h3{font-family:var(--display);font-size:1.02rem;line-height:1.2;color:var(--deep)}
+.fac h3 b{color:var(--red)}
+.fac p{grid-column:1/-1;font-size:.9rem}
+.tags{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap}
+.tag{display:inline-flex;gap:5px;align-items:center;background:var(--soft);border-radius:99px;padding:2px 10px 2px 7px;font-size:.78rem;font-weight:600;color:var(--deep)}
+/* scene 3 */
+.roles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;perspective:900px}
+.role{position:relative;border-top-color:var(--acc);padding-top:16px}
+.role .top{display:flex;gap:12px;align-items:center}
+.role h3{font-family:var(--display);font-size:1.05rem;line-height:1.15;color:var(--deep)}
+.role .q{margin-top:10px;font-size:.93rem;border-left:4px solid var(--acc);padding-left:10px}
+.role .q span{display:block;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:2px}
+.scene.active .flipin{animation:flipin .8s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--d,0) * 1s);transform-origin:50% 100%}
+@keyframes flipin{from{opacity:0;transform:rotateY(90deg) translateY(20px)}to{opacity:1;transform:none}}
+.note{margin-top:16px;background:var(--soft);border-radius:8px;padding:10px 14px;font-size:.95rem}
+/* scene 4: poker table */
+.pk-wrap{position:relative;max-width:1000px;margin:0 auto}
+.dealer{position:absolute;right:2%;top:-6px;display:flex;align-items:center;gap:8px;font-weight:700;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);z-index:2}
+.deck{position:relative;width:34px;height:46px}
+.deck i{position:absolute;inset:0;border-radius:4px;border:2px solid #fff;background:repeating-linear-gradient(45deg,#1D7E74 0 5px,#0B4A41 5px 10px);box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.deck i:nth-child(2){transform:translate(2px,-2px)}.deck i:nth-child(3){transform:translate(4px,-4px)}
+.poker{position:relative;container-type:inline-size;aspect-ratio:16/9;margin-top:22px;border-radius:50% / 48%;background:radial-gradient(ellipse at 50% 40%,#23937F 0%,#11665A 52%,#0B4A41 100%);border:clamp(8px,1.6vw,16px) solid #1C2624;box-shadow:inset 0 0 40px rgba(0,0,0,.35),0 10px 0 rgba(0,0,0,.16)}
+.poker::after{content:"";position:absolute;inset:3.5%;border-radius:50% / 48%;border:2px dashed rgba(255,255,255,.28);pointer-events:none}
+.pc{--l:var(--dl);--t:var(--dt);position:absolute;left:var(--l);top:var(--t);width:clamp(76px,8.6cqw,98px);aspect-ratio:.72;transform:translate(-50%,-50%) rotate(var(--r));perspective:700px;animation:deal .9s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--d,0) * 1s);z-index:1}
+@keyframes deal{0%{left:50%;top:-30%;opacity:0;transform:translate(-50%,-50%) rotate(0deg) scale(.55)}15%{opacity:1}100%{left:var(--l);top:var(--t);opacity:1;transform:translate(-50%,-50%) rotate(var(--r)) scale(1)}}
+.fl{position:absolute;inset:0;transform-style:preserve-3d;animation:flip .7s ease-in-out both;animation-delay:calc(var(--d,0) * 1s + .95s)}
+@keyframes flip{from{transform:rotateY(180deg)}to{transform:rotateY(0)}}
+.face,.back{position:absolute;inset:0;border-radius:8px;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.back{transform:rotateY(180deg);background:repeating-linear-gradient(45deg,#1D7E74 0 6px,#0B4A41 6px 12px);border:3px solid #fff;box-shadow:0 3px 0 rgba(0,0,0,.3)}
+.face{background:#fff;color:#1C2624;border:2px solid #fff;box-shadow:0 3px 0 rgba(0,0,0,.3);display:grid;place-items:center;padding:14% 8%;text-align:center;font-weight:700;font-size:clamp(.6rem,1.3cqw,.82rem);line-height:1.15}
+.face::before,.face::after{content:"";position:absolute;width:11%;aspect-ratio:1;background:var(--red);transform:rotate(45deg) scale(.75)}
+.face::before{left:9%;top:7%}.face::after{right:9%;bottom:7%}
+.trays{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}
+.tray{border:2px dashed var(--muted);border-radius:10px;padding:8px 6px;text-align:center;font-weight:700;font-size:.82rem;letter-spacing:.05em;text-transform:uppercase;color:var(--deep);animation:rise .6s ease-out both,glow 1.8s ease-in-out infinite;animation-delay:calc(var(--d,0) * 1s),calc(var(--d,0) * 1s + .6s)}
+.steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px}
+.step{display:flex;gap:12px;align-items:center;border-left:4px solid var(--red);padding:4px 0 4px 12px}
+.step b{display:block;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--green)}
+.who{display:flex;gap:4px;flex:none}
+.who span{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--acc);color:#fff;font-size:16px;animation:bob 1.8s ease-in-out infinite;animation-delay:calc(var(--d,0) * 1s)}
+.chips{display:flex;gap:6px;align-items:flex-end;flex:none;height:46px}
+.stk{display:flex;flex-direction:column-reverse;gap:2px}
+.stk i{display:block;width:26px;height:8px;border-radius:50%/60%;background:repeating-linear-gradient(90deg,#fff 0 4px,var(--c) 4px 9px);border:1px solid rgba(0,0,0,.35);animation:pop .4s ease-out both;animation-delay:calc(var(--d,0) * 1s)}
+/* scene 5 */
+.qfloat{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.qfloat span{position:absolute;bottom:-40px;left:var(--x);font-family:var(--display);font-weight:700;font-size:var(--s);color:var(--c);opacity:0;animation:fq var(--du) linear infinite;animation-delay:var(--d)}
+@keyframes fq{0%{opacity:0;transform:translateY(0) rotate(-12deg)}12%{opacity:.4}85%{opacity:.25}100%{opacity:0;transform:translateY(-520px) rotate(14deg)}}
+.s5{position:relative;z-index:1}
+.bubbles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.qb{position:relative;display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:2px solid var(--line);border-radius:14px 14px 14px 3px;padding:10px 12px;font-size:.93rem;line-height:1.3}
+.qb b{display:block;font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--green);margin-bottom:2px}
+.qb .badge{width:34px;height:34px;font-size:18px;box-shadow:none}
+.qm{position:absolute;right:-6px;top:-14px;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--red);color:#fff;font-family:var(--display);font-weight:700;font-size:1rem;font-style:normal;animation:wob 1.2s ease-in-out infinite;animation-delay:calc(var(--d,0) * 1s)}
+.agree{margin-top:22px}
+.agree .small{margin-top:8px}
+.verdict{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.vp{border:3px solid var(--deep);border-radius:99px;padding:6px 22px;font-family:var(--display);font-weight:700;font-size:1.1rem;color:var(--deep);animation:glow 1.6s ease-in-out infinite;animation-delay:calc(var(--d,0) * 1s)}
+.risks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.slot{border:2px dashed var(--muted);border-radius:8px;padding:10px 12px;color:var(--muted);font-size:.9rem;display:flex;gap:8px;align-items:center}
+.slot i{font-style:normal;font-family:var(--display);font-weight:700;color:var(--red);font-size:1.3rem;animation:wob 1.4s ease-in-out infinite}
+/* scene 6 */
+.pitch{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.pitch h3{font-family:var(--display);font-size:1rem;color:var(--deep)}
+.pitch p{font-size:.88rem;margin-top:3px;color:var(--muted)}
+.timer{display:flex;gap:14px;align-items:center;margin-bottom:12px}
+.timer svg{flex:none;width:72px;height:72px}
+.ringb{fill:none;stroke:var(--track);stroke-width:7}
+.ringc{fill:none;stroke:var(--red);stroke-width:7;stroke-linecap:round;stroke-dasharray:214;transform:rotate(-90deg);transform-origin:center;animation:ring 12s linear 2s both}
+.lair{position:relative;overflow:hidden;border-radius:16px;background:radial-gradient(ellipse at 50% 0%,#5A1712 0%,#1A0E0D 60%,#0F1A18 100%);color:#fff;padding:18px 16px 16px;min-height:320px;display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:start}
+.lair::before{content:"";position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;animation:flash 1s linear both;animation-delay:6s}
+@keyframes flash{0%{opacity:0}6%{opacity:.85}12%{opacity:0}20%{opacity:.6}28%{opacity:0}100%{opacity:0}}
+.cfo{position:relative;width:142px;text-align:center;opacity:0;animation:drop .7s cubic-bezier(.2,.8,.2,1) both;animation-delay:6s}
+@keyframes drop{from{opacity:0;transform:translateY(-60px) scale(.8)}to{opacity:1;transform:none}}
+.horns{position:absolute;left:50%;top:0;width:150px;height:46px;margin-left:-75px;z-index:2}
+.avatar{position:relative;margin-top:30px;width:128px;height:128px;margin-inline:auto;border-radius:50%;border:5px solid var(--red);overflow:hidden;box-shadow:0 0 0 0 rgba(233,68,56,.6);animation:menace 1.6s ease-in-out infinite,shake 3s ease-in-out infinite;animation-delay:6.7s}
+.avatar img{width:100%;height:100%;display:block;filter:saturate(1.35) contrast(1.15) brightness(.92)}
+.avatar::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 100%,rgba(233,68,56,.5),transparent 70%)}
+@keyframes menace{0%,100%{box-shadow:0 0 6px 0 rgba(233,68,56,.6)}50%{box-shadow:0 0 28px 8px rgba(233,68,56,.75)}}
+@keyframes shake{0%,86%,100%{transform:none}88%{transform:translateX(-4px) rotate(-2deg)}90%{transform:translateX(4px) rotate(2deg)}92%{transform:translateX(-3px)}94%{transform:translateX(3px)}}
+.plate{display:inline-block;margin-top:10px;background:var(--red);color:#fff;font-family:var(--display);font-weight:700;letter-spacing:.14em;font-size:.82rem;padding:3px 14px;border-radius:4px}
+.askbox{position:relative;min-height:230px}
+.ask{position:absolute;left:0;right:0;top:0;opacity:0;background:#1F1413;border:2px solid var(--red);border-radius:6px 16px 16px 16px;padding:14px 16px 14px 18px;font-size:clamp(1.05rem,3.2vw,1.35rem);font-weight:600;line-height:1.3;animation:ask 3.2s ease-in-out both;animation-delay:calc(var(--d,0) * 1s)}
+.ask::before{content:"?";position:absolute;right:10px;top:-22px;font-family:var(--display);font-weight:700;font-size:2.4rem;color:var(--red);transform:rotate(12deg)}
+.ask small{display:block;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--red);margin-bottom:4px;font-weight:700}
+@keyframes ask{0%{opacity:0;transform:translateY(12px) scale(.96)}8%{opacity:1;transform:none}90%{opacity:1}100%{opacity:0}}
+.voted{position:absolute;left:0;right:0;bottom:0;opacity:0;animation:rise .6s ease-out both;animation-delay:23.2s;font-weight:700;color:#fff}
+/* scene 7 */
+.write{margin-top:30px;max-width:640px}
+.write .line{height:3px;background:var(--deep);transform-origin:left;animation:grow 2.4s ease-out 2.4s both}
+.write span{display:block;font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:34px}
+.bignote{display:flex;gap:16px;align-items:center}
+.bignote .badge{width:64px;height:64px;font-size:34px;background:var(--red)}
+/* scene 8 */
+.bars{display:flex;gap:4px;margin-top:18px;max-width:760px}
+.bar{transform-origin:left;animation:grow .9s ease-out both;animation-delay:calc(var(--d,0) * 1s);background:var(--green);color:var(--on-deep);border-radius:6px;padding:10px;font-weight:700;font-size:.88rem;min-width:0;line-height:1.2}
+.bar small{display:block;font-weight:400;opacity:.92}
+/* controls */
+.controls{position:sticky;bottom:0;background:var(--bg);border-top:1px solid var(--line);padding-block:8px calc(8px + env(safe-area-inset-bottom,0px));z-index:5}
+.ctl-in{max-width:1180px;margin:0 auto;padding:0 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btns{display:flex;gap:6px}
+.btn{font:inherit;font-weight:700;background:var(--deep);color:var(--on-deep);border:0;border-radius:8px;padding:8px 14px;cursor:pointer;min-width:44px;min-height:44px}
+.btn.alt{background:var(--surface);color:var(--deep);border:1px solid var(--line)}
+.btn:focus-visible,.tab:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.tabs{display:flex;gap:4px;flex:1;min-width:240px}
+.tab{position:relative;flex:1;border:0;background:var(--soft);border-radius:6px;min-height:44px;padding:0 4px;font:inherit;font-size:.72rem;font-weight:700;color:var(--muted);cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tab .fill{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--track)}
+.tab span{position:relative}
+.tab.on{color:var(--deep)}
+/* mobile */
+@media (max-width:760px){
+  .band-s{display:none}
+  .two,.roles,.factories,.bubbles,.pitch,.steps,.risks{grid-template-columns:minmax(0,1fr)}
+  .trays{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rail span{font-size:.68rem;letter-spacing:.02em}
+  .bars{flex-wrap:wrap}.bar{flex:1 1 40%!important}
+  .tab span{display:none}
+  .tab::after{content:attr(data-n);position:relative;font-size:.9rem}
+  .stage{min-height:0}
+  .lair{grid-template-columns:1fr;justify-items:center;padding-inline:12px}
+  .askbox{width:100%;min-height:210px}
+  .fan{width:120px;height:110px}
+  .facts li{font-size:.95rem}
+  .dealer{display:none}
+  .btn{min-height:40px;padding:6px 12px}
+  .tab{min-height:36px}
+  .controls{padding-block:6px calc(6px + env(safe-area-inset-bottom,0px))}
+  .ctl-in{gap:6px}
+}
+@media (max-width:640px){
+  .poker{aspect-ratio:5/8.2;border-radius:90px;margin-top:8px}
+  .poker::after{border-radius:78px}
+  .pc{--l:var(--ml);--t:var(--mt);width:clamp(74px,25cqw,100px)}
+  .face{font-size:.7rem;padding:16% 6%}
+}
+@media (min-width:641px){.pc{--l:var(--dl);--t:var(--dt)}}
+@media (prefers-reduced-motion:reduce){
+  .a,.pop,.flipin,.fan i,.pc,.fl,.cfo,.ask,.voted,.bar,.stk i,.meet .mc{animation:none!important;opacity:1!important;transform:none!important}
+  .pc{transform:translate(-50%,-50%) rotate(var(--r))!important}
+  .meet .mc{transform:rotate(var(--r)) translate(var(--tx),var(--ty))!important}
+  .rail::after,.write .line,.ringc,.qm,.slot i,.vp,.tray,.who span,.avatar,.bobber{animation:none!important}
+  .qfloat{display:none}
+  .ask{position:static;margin-bottom:10px}.askbox{min-height:0}.lair::before{display:none}
+  .ringc{stroke-dashoffset:60}
+}
+
+.band-r{display:flex;align-items:center;gap:14px;flex:none}
+.lang{display:flex;border:1px solid rgba(255,255,255,.55);border-radius:999px;overflow:hidden}
+.lang button{font:inherit;font-size:.82rem;font-weight:700;background:transparent;color:#fff;border:0;padding:6px 12px;min-height:32px;cursor:pointer}
+.lang button+button{border-left:1px solid rgba(255,255,255,.35)}
+.lang button[aria-pressed="true"]{background:#fff;color:#0B4A41}
+.lang button:focus-visible{outline:3px solid var(--red);outline-offset:-3px}
+html[lang="zh-Hans"]{--font:"Cabin","PingFang SC","Microsoft YaHei","Noto Sans SC","Segoe UI",system-ui,sans-serif;--display:"Fredoka","PingFang SC","Microsoft YaHei","Noto Sans SC",system-ui,sans-serif}
+html[lang="zh-Hans"] .face,html[lang="zh-Hans"] .tab span{letter-spacing:0}
+@media (max-width:480px){
+  .band-t{font-size:1.05rem;line-height:1.15}
+  .band-in>div:first-child{min-width:0}
+  .band-r{gap:8px}
+  .band img{height:22px}
+  .lang button{padding:5px 8px;font-size:.78rem}
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-leaf" viewBox="0 0 24 24"><path d="M5 19C5 10 10 5 20 5c0 10-5 15-14 15M5 19c2-4 5-7 9-9"/></symbol>
+  <symbol id="i-coin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 6.5v11M14.8 9.5c-.5-1-1.5-1.6-2.8-1.6-1.6 0-2.7.8-2.7 2s1.1 1.6 2.700 2 2.700.8 2.700 2-1.100 2-2.700 2c-1.300 0-2.300-.6-2.800-1.600"/></symbol>
+  <symbol id="i-clip" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="16" rx="2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M8.5 13.500l2.500 2.500 4.500-5"/></symbol>
+  <symbol id="i-scales" viewBox="0 0 24 24"><path d="M12 4v16M7 20h10M4 7h16M4 7l-3 6h6zM20 7l-3 6h6z"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 3L5 14h6l-1 7 8-11h-6z"/></symbol>
+  <symbol id="i-mega" viewBox="0 0 24 24"><path d="M3 10v4h3l9 4V6L6 10z"/><path d="M18.500 9.500a4 4 0 010 5"/></symbol>
+  <symbol id="i-table" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><circle cx="12" cy="3.500" r="1.600"/><circle cx="12" cy="20.500" r="1.600"/><circle cx="3.500" cy="12" r="1.600"/><circle cx="20.500" cy="12" r="1.600"/></symbol>
+  <symbol id="i-cards" viewBox="0 0 24 24"><rect x="3.500" y="6" width="10" height="14" rx="1.800" transform="rotate(-12 8.500 13)"/><rect x="10" y="4" width="10" height="14" rx="1.800" transform="rotate(10 15 11)"/></symbol>
+  <symbol id="i-shirt" viewBox="0 0 24 24"><path d="M8.500 3.500L3 6.500l2 4 2.500-1V20h9V9.500l2.500 1 2-4-5.500-3a3.500 3.500 0 01-7 0z"/></symbol>
+  <symbol id="i-shoe" viewBox="0 0 24 24"><path d="M2.500 17.500V13l4-1.500 2.500 2.500 3.500-2.500 4.500 3c2.500 1 4.500 1.500 4.500 3.500v2h-19zM2.500 17.500h19"/></symbol>
+  <symbol id="i-chip" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.500"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/></symbol>
+  <symbol id="i-factory" viewBox="0 0 24 24"><path d="M3 21V11l6 4v-4l6 4V5h4v16zM7 21v-3M12 21v-3"/></symbol>
+  <symbol id="i-pylon" viewBox="0 0 24 24"><path d="M12 2.500L7 21.500M12 2.500l5 19M8.500 9h7M7.500 15h9M9 9l6.500 6M15 9l-6.500 6"/></symbol>
+  <symbol id="i-park" viewBox="0 0 24 24"><path d="M4 21V8l6-3v16M10 21V10l10 3v8M3 21h18M7 10v.01M7 13v.01M7 16v.01M14 14v.01M17 15v.01M14 17v.01M17 18v.01"/></symbol>
+</svg>
+
+<header class="band">
+  <div class="band-in">
+    <div>
+      <div class="band-t">DPPA Deal Room</div>
+      <div class="band-s">CEBA Vietnam Clean Energy Procurement Academy, Day 2, 15:00–16:00</div>
+    </div>
+    <div class="band-r"><div class="lang" role="group" aria-label="Language"><button type="button" data-lang="en" aria-pressed="true">EN</button><button type="button" data-lang="vi" aria-pressed="false">VI</button><button type="button" data-lang="zh" aria-pressed="false">中文</button></div><img alt="Allotrope Partners" src="data:image/png;base64,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"></div>
+  </div>
+</header>
+
+<div class="wrap">
+<main class="stage" id="stage">
+
+  <!-- 1 -->
+  <section class="scene active" data-label="Intro" data-dur="7">
+    <p class="small muted a" style="--d:.1">Preparing for DPPA Implementation</p>
+    <div class="hero">
+      <div class="fan" aria-hidden="true">
+        <i style="--r:-28deg;--d:.2">&#9830;</i><i style="--r:-9deg;--d:.35">&#9830;</i><i style="--r:10deg;--d:.5">&#9830;</i><i style="--r:29deg;--d:.65">&#9830;</i>
+      </div>
+      <h1 class="a" style="--d:.3">DPPA Deal Room</h1>
+    </div>
+    <div class="title-lines">
+      <p class="lead a" style="--d:.9">A role-play. Each table is the internal DPPA working group of one factory, and each participant plays one department.</p>
+      <p class="lead a" style="--d:1.5">The group works from the first eligibility check to the first settlement.</p>
+    </div>
+    <div class="rail a" style="--d:1.8">
+      <span>Eligibility</span><span>Term sheet</span><span>Contract</span><span>Registration</span>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="scene" data-label="Setup" data-dur="14">
+    <div class="scene-head a"><h2>One table, one factory</h2></div>
+    <div class="two">
+      <div>
+        <div class="meet" aria-hidden="true">
+          <div class="tbl"></div>
+          <i class="mc" style="--r:-18deg;--tx:-60%;--ty:10%;--d:.4"></i>
+          <i class="mc" style="--r:6deg;--tx:10%;--ty:-6%;--d:.7"></i>
+          <i class="mc" style="--r:24deg;--tx:70%;--ty:14%;--d:1"></i>
+          <span class="seat pop" style="--x:0;--y:-40;--acc:#1D7E74;--d:1.3"><svg class="ic"><use href="#i-leaf"/></svg></span>
+          <span class="seat pop" style="--x:35;--y:-20;--acc:#E94438;--d:1.6"><svg class="ic"><use href="#i-coin"/></svg></span>
+          <span class="seat pop" style="--x:35;--y:20;--acc:#0B4A41;--d:1.9"><svg class="ic"><use href="#i-clip"/></svg></span>
+          <span class="seat pop" style="--x:0;--y:40;--acc:#5D6B67;--d:2.2"><svg class="ic"><use href="#i-scales"/></svg></span>
+          <span class="seat pop" style="--x:-35;--y:20;--acc:#11665A;--d:2.5"><svg class="ic"><use href="#i-bolt"/></svg></span>
+          <span class="seat pop" style="--x:-35;--y:-20;--acc:#C0392B;--d:2.8"><svg class="ic"><use href="#i-mega"/></svg></span>
+        </div>
+        <ul class="facts" data-cue="3">
+          <li class="a" style="--d:3.2">4–5 tables, 6–7 people per table.</li>
+          <li class="a" style="--d:4.2">Each table gets one factory profile, one set of role cards and one set of contracting cards.</li>
+          <li class="a" style="--d:5.2">Two Allotrope facilitators play the CFO throughout. Other tables can ask questions.</li>
+          <li class="a" style="--d:6.2">With more tables, two tables share a factory.</li>
+        </ul>
+      </div>
+      <div class="factories" data-cue="7">
+        <div class="card fac flipin" style="--d:.6"><span class="badge bobber" style="--acc:#1D7E74"><svg class="ic"><use href="#i-shirt"/></svg></span><h3><b>A</b> Apparel</h3><div class="tags"><span class="tag"><svg class="ic"><use href="#i-park"/></svg>Inside an industrial park</span></div><p>Buys electricity from the park developer, not EVN. Single day shift, six days a week. The brand wants more renewable electricity each year.</p></div>
+        <div class="card fac flipin" style="--d:1.6"><span class="badge bobber" style="--acc:#E94438;--d:.3"><svg class="ic"><use href="#i-shoe"/></svg></span><h3><b>B</b> Footwear</h3><div class="tags"><span class="tag"><svg class="ic"><use href="#i-pylon"/></svg>Direct EVN customer</span></div><p>Standalone site with its own EVN contract. Two shifts, six days a week. The brand has set a supplier target for renewable electricity by 2030.</p></div>
+        <div class="card fac flipin" style="--d:2.6"><span class="badge bobber" style="--acc:#0B4A41;--d:.6"><svg class="ic"><use href="#i-chip"/></svg></span><h3><b>C</b> Electronics components</h3><div class="tags"><span class="tag"><svg class="ic"><use href="#i-park"/></svg>Inside an industrial park</span></div><p>Buys electricity from the park developer. Runs mostly on weekdays, with much lower load at weekends. The parent company has an RE100 target.</p></div>
+        <div class="card fac flipin" style="--d:3.6"><span class="badge bobber" style="--acc:#5D6B67;--d:.9"><svg class="ic"><use href="#i-factory"/></svg></span><h3><b>D</b> Electronics assembly</h3><div class="tags"><span class="tag"><svg class="ic"><use href="#i-pylon"/></svg>Direct EVN customer</span></div><p>Large standalone site with its own EVN contract. Runs 24/7 with a steady load. The parent has an RE100 target and customers ask for lower-carbon products.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="scene" data-label="Roles" data-dur="16">
+    <div class="scene-head a"><h2>Role cards</h2><span class="pill">6 roles</span></div>
+    <div class="roles">
+      <div class="card role flipin" style="--acc:#1D7E74;--d:.3"><div class="top"><span class="badge bobber"><svg class="ic"><use href="#i-leaf"/></svg></span><div><h3>Sustainability Manager</h3><div class="vn">Trưởng phòng Phát triển Bền vững · 可持续发展经理</div></div></div><p class="q"><span>Question to the team</span>If the solar farm produces less, can we still say we use clean electricity?</p></div>
+      <div class="card role flipin" style="--acc:#E94438;--d:1.3"><div class="top"><span class="badge bobber" style="--d:.3"><svg class="ic"><use href="#i-coin"/></svg></span><div><h3>Finance Manager</h3><div class="vn">Trưởng phòng Tài chính · 财务经理</div></div></div><p class="q"><span>Question to the team</span>What if the electricity price stays high for many years?</p></div>
+      <div class="card role flipin" data-cue="2.4" style="--acc:#0B4A41;--d:2.3"><div class="top"><span class="badge bobber" style="--d:.6"><svg class="ic"><use href="#i-clip"/></svg></span><div><h3>Procurement Manager</h3><div class="vn">Trưởng phòng Thu mua · 采购经理</div></div></div><p class="q"><span>Question to the team</span>What if the solar farm company is sold or closes down?</p></div>
+      <div class="card role flipin" style="--acc:#5D6B67;--d:3.3"><div class="top"><span class="badge bobber" style="--d:.9"><svg class="ic"><use href="#i-scales"/></svg></span><div><h3>Legal Counsel</h3><div class="vn">Phòng Pháp Chế · 法务顾问</div></div></div><p class="q"><span>Question to the team</span>What happens to our contract if the government changes the rules?</p></div>
+      <div class="card role flipin" data-cue="4.4" style="--acc:#11665A;--d:4.3"><div class="top"><span class="badge bobber" style="--d:1.2"><svg class="ic"><use href="#i-bolt"/></svg></span><div><h3>Energy / Facilities Manager</h3><div class="vn">Trưởng phòng Năng lượng / Cơ điện · 能源/厂务经理</div></div></div><p class="q"><span>Question to the team</span>What if our factory uses much more or much less electricity in a few years?</p></div>
+      <div class="card role flipin" style="--acc:#C0392B;--d:5.3"><div class="top"><span class="badge bobber" style="--d:1.5"><svg class="ic"><use href="#i-mega"/></svg></span><div><h3>Brand / Customer Liaison</h3><div class="vn">Phụ trách Quan hệ Thương hiệu / Khách hàng · 品牌/客户对接负责人</div></div></div><p class="q"><span>Question to the team</span>What happens if we miss the customer’s deadline?</p></div>
+    </div>
+    <p class="note a" data-cue="7.3" style="--d:7.2">Read your card silently. Do not share your confidential information unless you choose to during the discussion. You do not need to play your real job.</p>
+  </section>
+
+  <!-- 4 -->
+  <section class="scene" data-label="Round 1" data-dur="26">
+    <div class="scene-head a"><h2>Round 1: How do we get there?</h2><span class="pill">15 min</span></div>
+    <p class="lead a" style="--d:.2;margin-bottom:6px"><b>Step 1.</b> Sort the 12 cards across the four stages.</p>
+    <div class="pk-wrap">
+      <div class="dealer a" style="--d:.3"><div class="deck" aria-hidden="true"><i></i><i></i><i></i></div>Dealer</div>
+      <div class="poker" aria-label="Poker table with twelve action cards dealt face up">
+        <div class="pc" style="--dl:20%;--dt:26%;--ml:20%;--mt:14%;--r:-7deg;--d:.8"><div class="fl" style="--d:.8"><div class="back"></div><div class="face">CfD negotiation</div></div></div>
+        <div class="pc" style="--dl:40%;--dt:25%;--ml:50%;--mt:14%;--r:5deg;--d:1.15"><div class="fl" style="--d:1.15"><div class="back"></div><div class="face">Confirm eligibility</div></div></div>
+        <div class="pc" style="--dl:60%;--dt:27%;--ml:80%;--mt:14%;--r:-4deg;--d:1.5"><div class="fl" style="--d:1.5"><div class="back"></div><div class="face">Internal approval</div></div></div>
+        <div class="pc" style="--dl:80%;--dt:26%;--ml:20%;--mt:37%;--r:8deg;--d:1.85"><div class="fl" style="--d:1.85"><div class="back"></div><div class="face">First settlement</div></div></div>
+        <div class="pc" style="--dl:21%;--dt:51%;--ml:50%;--mt:37%;--r:6deg;--d:2.2"><div class="fl" style="--d:2.2"><div class="back"></div><div class="face">Metering check</div></div></div>
+        <div class="pc" style="--dl:41%;--dt:49%;--ml:80%;--mt:37%;--r:-8deg;--d:2.55"><div class="fl" style="--d:2.55"><div class="back"></div><div class="face">Screen RE generators</div></div></div>
+        <div class="pc" style="--dl:59%;--dt:52%;--ml:20%;--mt:62%;--r:7deg;--d:2.9"><div class="fl" style="--d:2.9"><div class="back"></div><div class="face">Registration / notification</div></div></div>
+        <div class="pc" style="--dl:79%;--dt:50%;--ml:50%;--mt:62%;--r:-5deg;--d:3.25"><div class="fl" style="--d:3.25"><div class="back"></div><div class="face">Build cost model</div></div></div>
+        <div class="pc" style="--dl:19%;--dt:74%;--ml:80%;--mt:62%;--r:-6deg;--d:3.6"><div class="fl" style="--d:3.6"><div class="back"></div><div class="face">Non-binding term sheet</div></div></div>
+        <div class="pc" style="--dl:40%;--dt:73%;--ml:20%;--mt:85%;--r:9deg;--d:3.95"><div class="fl" style="--d:3.95"><div class="back"></div><div class="face">EVN retail contract amendment</div></div></div>
+        <div class="pc" style="--dl:61%;--dt:75%;--ml:50%;--mt:85%;--r:-7deg;--d:4.3"><div class="fl" style="--d:4.3"><div class="back"></div><div class="face">Collect 12-month hourly load data</div></div></div>
+        <div class="pc" style="--dl:81%;--dt:73%;--ml:80%;--mt:85%;--r:5deg;--d:4.65"><div class="fl" style="--d:4.65"><div class="back"></div><div class="face">Accounting treatment check</div></div></div>
+      </div>
+      <div class="trays" data-cue="8.2">
+        <div class="tray" style="--d:8">Eligibility</div>
+        <div class="tray" style="--d:8.4">Term sheet</div>
+        <div class="tray" style="--d:8.8">Contract</div>
+        <div class="tray" style="--d:9.2">Registration</div>
+      </div>
+    </div>
+    <div class="steps" data-cue="11.2">
+      <div class="step a" style="--d:11"><div class="who" aria-hidden="true">
+        <span style="--acc:#1D7E74"><svg class="ic"><use href="#i-leaf"/></svg></span><span style="--acc:#E94438;--d:.2"><svg class="ic"><use href="#i-coin"/></svg></span><span style="--acc:#0B4A41;--d:.4"><svg class="ic"><use href="#i-clip"/></svg></span></div>
+        <div><b>Step 2</b>Who is responsible for each step? What can you do internally, and what needs outside help?</div></div>
+      <div class="step a" style="--d:15"><div class="chips" aria-hidden="true">
+        <div class="stk"><i style="--c:#E94438;--d:15.4"></i><i style="--c:#E94438;--d:15.6"></i></div>
+        <div class="stk"><i style="--c:#1D7E74;--d:15.8"></i><i style="--c:#1D7E74;--d:16"></i><i style="--c:#1D7E74;--d:16.2"></i><i style="--c:#1D7E74;--d:16.4"></i></div>
+        <div class="stk"><i style="--c:#0B4A41;--d:16.6"></i><i style="--c:#0B4A41;--d:16.8"></i><i style="--c:#0B4A41;--d:17"></i></div></div>
+        <div><b>Step 3</b>Estimate roughly how much time each step takes.</div></div>
+    </div>
+  </section>
+
+  <!-- 5 -->
+  <section class="scene" data-label="Round 2" data-dur="18">
+    <div class="qfloat" aria-hidden="true">
+      <span style="--x:4%;--s:44px;--c:var(--green);--du:9s;--d:0s">?</span><span style="--x:14%;--s:26px;--c:var(--red);--du:7s;--d:2s">?</span>
+      <span style="--x:24%;--s:60px;--c:var(--green);--du:11s;--d:1s">?</span><span style="--x:35%;--s:30px;--c:var(--red);--du:8s;--d:4s">?</span>
+      <span style="--x:46%;--s:52px;--c:var(--green);--du:10s;--d:3s">?</span><span style="--x:57%;--s:28px;--c:var(--red);--du:7.5s;--d:.5s">?</span>
+      <span style="--x:67%;--s:64px;--c:var(--green);--du:12s;--d:5s">?</span><span style="--x:77%;--s:34px;--c:var(--red);--du:8.5s;--d:1.5s">?</span>
+      <span style="--x:86%;--s:48px;--c:var(--green);--du:9.5s;--d:3.5s">?</span><span style="--x:94%;--s:30px;--c:var(--red);--du:7s;--d:6s">?</span>
+    </div>
+    <div class="s5">
+      <div class="scene-head a"><h2>Round 2: Evaluate your DPPA opportunity and risks</h2><span class="pill">12 min</span></div>
+      <div class="two">
+        <div>
+          <p class="lead a" style="--d:.3"><b>Discuss in role (8 min).</b> Each person reads their card and says in one sentence what their department thinks about a DPPA for this factory.</p>
+          <p class="lead a" style="--d:.9;margin-top:10px">Then answer the hard question your department would ask.</p>
+        </div>
+        <div class="bubbles" data-cue="1.6">
+          <div class="qb a" style="--d:1.2"><span class="badge" style="--acc:#1D7E74"><svg class="ic"><use href="#i-leaf"/></svg></span><div><b>Sustainability</b>A cloudy month hits. Does the “clean electricity” claim come down?</div><i class="qm" style="--d:0s">?</i></div>
+          <div class="qb a" style="--d:2"><span class="badge" style="--acc:#E94438"><svg class="ic"><use href="#i-coin"/></svg></span><div><b>Finance</b>Power prices crash in year 5. Whose name is on the approval?</div><i class="qm" style="--d:.3s">?</i></div>
+          <div class="qb a" style="--d:2.8"><span class="badge" style="--acc:#0B4A41"><svg class="ic"><use href="#i-clip"/></svg></span><div><b>Procurement</b>The developer is sold to a stranger. Do we still shake hands?</div><i class="qm" style="--d:.6s">?</i></div>
+          <div class="qb a" style="--d:3.6"><span class="badge" style="--acc:#5D6B67"><svg class="ic"><use href="#i-scales"/></svg></span><div><b>Legal</b>The rules change in year 3. Who takes the awkward phone call?</div><i class="qm" style="--d:.9s">?</i></div>
+          <div class="qb a" style="--d:4.4"><span class="badge" style="--acc:#11665A"><svg class="ic"><use href="#i-bolt"/></svg></span><div><b>Energy / Facilities</b>Weekend load is near zero. Are we paying for sunshine nobody uses?</div><i class="qm" style="--d:1.2s">?</i></div>
+          <div class="qb a" style="--d:5.2"><span class="badge" style="--acc:#C0392B"><svg class="ic"><use href="#i-mega"/></svg></span><div><b>Brand / Customer</b>The brand wants proof by Friday. What do we actually send?</div><i class="qm" style="--d:1.5s">?</i></div>
+        </div>
+      </div>
+      <div class="agree a" style="--d:9" data-cue="9.2">
+        <p class="lead"><b>As a group, agree:</b></p>
+        <div class="verdict"><span class="vp" style="--d:0">Go</span><span class="vp" style="--d:.5">Maybe</span><span class="vp" style="--d:1">No</span></div>
+        <div class="risks"><div class="slot"><i>?</i>Risk 1</div><div class="slot"><i style="animation-delay:.4s">?</i>Risk 2</div></div>
+        <p class="small muted">Plus the top 2 risks.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 -->
+  <section class="scene" data-label="Round 3" data-dur="26">
+    <div class="scene-head a"><h2>Round 3: Pitch to the CFO</h2><span class="pill">15 min</span></div>
+    <div class="two">
+      <div>
+        <div class="timer a" style="--d:.3">
+          <svg viewBox="0 0 80 80" aria-hidden="true"><circle class="ringb" cx="40" cy="40" r="34"/><circle class="ringc" cx="40" cy="40" r="34"/></svg>
+          <p class="lead">One presenter per group, 60 seconds. The room votes for the pitch the CFO should approve.</p>
+        </div>
+        <div class="pitch">
+          <div class="card a" style="--d:1"><h3>Why now?</h3><p>RE100 or customer requirement.</p></div>
+          <div class="card a" style="--d:1.8"><h3>What we get</h3><p>Price certainty on X% of load.</p></div>
+          <div class="card a" style="--d:2.6"><h3>Costs and risks</h3><p>Projected cost vs EVN tariff, curtailment, a 10–20 year commitment.</p></div>
+          <div class="card a" style="--d:3.4"><h3>What we need from you</h3><p>Approval for load data work, a non-binding term sheet, HQ sign-off.</p></div>
+        </div>
+        <p class="lead a" style="--d:4.4;margin-top:14px"><b>Facilitators and the room play the CFO.</b> Brace yourselves.</p>
+      </div>
+      <div class="lair" data-cue="6" aria-label="The CFO asks hard questions">
+        <div class="cfo">
+          <svg class="horns" viewBox="0 0 150 46" aria-hidden="true"><path d="M30 46C16 30 18 12 34 1C36 20 46 32 62 42Z" fill="#E94438" stroke="#7a1812" stroke-width="2"/><path d="M120 46C134 30 132 12 116 1C114 20 104 32 88 42Z" fill="#E94438" stroke="#7a1812" stroke-width="2"/></svg>
+          <div class="avatar"><img alt="The CFO" src="data:image/jpeg;base64,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"></div>
+          <span class="plate">THE CFO</span>
+        </div>
+        <div class="askbox">
+          <div class="ask" style="--d:7.2"><small>Hard question 1</small>Is this cheaper than EVN, and in which years?</div>
+          <div class="ask" style="--d:10.4"><small>Hard question 2</small>What if the solar farm is curtailed or goes bankrupt?</div>
+          <div class="ask" style="--d:13.6"><small>Hard question 3</small>Does this count as a derivative on our balance sheet?</div>
+          <div class="ask" style="--d:16.8"><small>Hard question 4</small>Why sign for 15 years when the regulation is still new?</div>
+          <div class="ask" style="--d:20"><small>Hard question 5</small>Can HQ just buy I-RECs instead?</div>
+          <p class="voted">Now the room votes: which pitch does the CFO approve?</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 -->
+  <section class="scene" data-label="Takeaway" data-dur="9">
+    <div class="scene-head a"><h2>My takeaway</h2><span class="pill">5 min</span></div>
+    <div class="bignote a" style="--d:.3"><span class="badge bobber"><svg class="ic"><use href="#i-table"/></svg></span>
+      <p class="lead" style="font-size:clamp(1.2rem,4vw,1.6rem);max-width:30ch">Step out of your role. What is the real bottleneck in your company?</p></div>
+    <div class="write a" style="--d:1.4"><span>My takeaway</span><div class="line"></div></div>
+  </section>
+
+  <!-- 8 -->
+  <section class="scene" data-label="Next" data-dur="9">
+    <div class="scene-head a"><h2>Session at a glance</h2></div>
+    <div class="bars">
+      <div class="bar" style="--d:.3;flex:15 1 0">Round 1<small>15 min · Sort the cards</small></div>
+      <div class="bar" style="--d:.9;flex:12 1 0">Round 2<small>12 min · Evaluate</small></div>
+      <div class="bar" style="--d:1.5;flex:15 1 0">Round 3<small>15 min · Pitch to the CFO</small></div>
+      <div class="bar" style="--d:2.1;flex:5 1 0">Takeaway<small>5 min</small></div>
+    </div>
+    <p class="lead a" style="--d:3.2;margin-top:26px"><b>Next, 16:00:</b> Training wrap-up, with the action roadmap and the per-session survey.</p>
+  </section>
+
+</main>
+</div>
+
+<nav class="controls" aria-label="Playback">
+  <div class="ctl-in">
+    <div class="btns">
+      <button class="btn alt" id="prev" aria-label="Previous scene">&#9664;</button>
+      <button class="btn" id="play" aria-label="Pause">Pause</button>
+      <button class="btn alt" id="next" aria-label="Next scene">&#9654;</button>
+      <button class="btn alt" id="restart" aria-label="Restart">Restart</button>
+      <button class="btn alt" id="fs" aria-label="Full screen" hidden>Full screen</button>
+    </div>
+    <div class="tabs" id="tabs"></div>
+  </div>
+</nav>
+
+<script>
+(function(){
+  var scenes=[].slice.call(document.querySelectorAll('.scene'));
+  var stage=document.getElementById('stage');
+  var tabsEl=document.getElementById('tabs');
+  var playBtn=document.getElementById('play');
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var idx=0,t=0,playing=!reduce,last=null,tabs=[],cues=[];
+  var I18N={"DPPA Deal Room": ["Phòng đàm phán DPPA", "DPPA 谈判室"], "CEBA Vietnam Clean Energy Procurement Academy, Day 2, 15:00–16:00": ["Học viện Mua sắm Năng lượng Sạch CEBA Việt Nam, Ngày 2, 15:00–16:00", "CEBA 越南清洁能源采购学院，第 2 天，15:00–16:00"], "Preparing for DPPA Implementation": ["Chuẩn bị triển khai DPPA", "为实施 DPPA 做准备"], "A role-play. Each table is the internal DPPA working group of one factory, and each participant plays one department.": ["Một tình huống nhập vai. Mỗi bàn là nhóm công tác DPPA nội bộ của một nhà máy, và mỗi người tham gia đóng vai một phòng ban.", "这是一次角色扮演。每张桌子代表一家工厂内部的 DPPA 工作小组，每位参与者扮演一个部门。"], "The group works from the first eligibility check to the first settlement.": ["Nhóm làm việc từ bước kiểm tra điều kiện đầu tiên đến kỳ thanh toán đầu tiên.", "小组从首次资格核查一直做到首次结算。"], "Eligibility": ["Điều kiện tham gia", "资格审核"], "Term sheet": ["Term sheet", "条款清单"], "Contract": ["Hợp đồng", "合同"], "Registration": ["Đăng ký", "登记备案"], "One table, one factory": ["Một bàn, một nhà máy", "一桌一厂"], "4–5 tables, 6–7 people per table.": ["4–5 bàn, mỗi bàn 6–7 người.", "4–5 张桌子，每桌 6–7 人。"], "Each table gets one factory profile, one set of role cards and one set of contracting cards.": ["Mỗi bàn nhận một hồ sơ nhà máy, một bộ thẻ vai trò và một bộ thẻ hợp đồng.", "每桌领取一份工厂资料、一套角色卡和一套合同卡。"], "Two Allotrope facilitators play the CFO throughout. Other tables can ask questions.": ["Hai điều phối viên của Allotrope đóng vai CFO xuyên suốt. Các bàn khác có thể đặt câu hỏi.", "两位 Allotrope 主持人全程扮演 CFO。其他桌可以提问。"], "With more tables, two tables share a factory.": ["Nếu có nhiều bàn hơn, hai bàn dùng chung một nhà máy.", "如果桌数更多，两桌共用一家工厂。"], "Apparel": ["May mặc", "服装"], "Footwear": ["Giày dép", "鞋业"], "Electronics components": ["Linh kiện điện tử", "电子元器件"], "Electronics assembly": ["Lắp ráp điện tử", "电子组装"], "Inside an industrial park": ["Trong khu công nghiệp", "位于工业园区内"], "Direct EVN customer": ["Khách hàng trực tiếp của EVN", "EVN 直供客户"], "Buys electricity from the park developer, not EVN. Single day shift, six days a week. The brand wants more renewable electricity each year.": ["Mua điện từ chủ đầu tư khu công nghiệp, không mua từ EVN. Làm một ca ngày, sáu ngày một tuần. Thương hiệu muốn tăng tỷ lệ điện tái tạo mỗi năm.", "从园区开发商而非 EVN 购电。单日班，每周六天。品牌方要求每年提高可再生电力比例。"], "Standalone site with its own EVN contract. Two shifts, six days a week. The brand has set a supplier target for renewable electricity by 2030.": ["Nhà máy đứng riêng, có hợp đồng riêng với EVN. Hai ca, sáu ngày một tuần. Thương hiệu đã đặt mục tiêu điện tái tạo cho nhà cung cấp đến năm 2030.", "独立厂区，与 EVN 直接签约。两班倒，每周六天。品牌方为供应商设定了到 2030 年的可再生电力目标。"], "Buys electricity from the park developer. Runs mostly on weekdays, with much lower load at weekends. The parent company has an RE100 target.": ["Mua điện từ chủ đầu tư khu công nghiệp. Chủ yếu chạy các ngày trong tuần, phụ tải cuối tuần thấp hơn nhiều. Công ty mẹ có mục tiêu RE100.", "从园区开发商购电。主要在工作日运行，周末负荷低得多。母公司设有 RE100 目标。"], "Large standalone site with its own EVN contract. Runs 24/7 with a steady load. The parent has an RE100 target and customers ask for lower-carbon products.": ["Nhà máy lớn đứng riêng, có hợp đồng riêng với EVN. Chạy 24/7 với phụ tải ổn định. Công ty mẹ có mục tiêu RE100 và khách hàng yêu cầu sản phẩm phát thải thấp hơn.", "大型独立厂区，与 EVN 直接签约。全天候 24/7 运行，负荷稳定。母公司设有 RE100 目标，客户要求提供低碳产品。"], "Role cards": ["Thẻ vai trò", "角色卡"], "6 roles": ["6 vai trò", "6 个角色"], "Question to the team": ["Câu hỏi cho cả nhóm", "向团队提问"], "If the solar farm produces less, can we still say we use clean electricity?": ["Nếu trang trại điện mặt trời phát ít hơn, chúng ta có còn nói là đang dùng điện sạch được không?", "如果光伏电站发电量减少，我们还能声称使用的是清洁电力吗？"], "What if the electricity price stays high for many years?": ["Nếu giá điện vẫn ở mức cao trong nhiều năm thì sao?", "如果电价多年居高不下怎么办？"], "What if the solar farm company is sold or closes down?": ["Nếu công ty điện mặt trời bị bán hoặc đóng cửa thì sao?", "如果光伏电站公司被出售或倒闭怎么办？"], "What happens to our contract if the government changes the rules?": ["Hợp đồng của chúng ta sẽ ra sao nếu Chính phủ thay đổi quy định?", "如果政府修改规则，我们的合同会怎样？"], "What if our factory uses much more or much less electricity in a few years?": ["Nếu vài năm nữa nhà máy dùng nhiều hơn hoặc ít hơn hẳn lượng điện hiện nay thì sao?", "如果几年后工厂的用电量大幅增加或减少怎么办？"], "What happens if we miss the customer’s deadline?": ["Chuyện gì xảy ra nếu chúng ta lỡ hạn của khách hàng?", "如果我们错过客户的期限会怎样？"], "Read your card silently. Do not share your confidential information unless you choose to during the discussion. You do not need to play your real job.": ["Hãy đọc thẻ của bạn trong im lặng. Đừng chia sẻ thông tin mật của mình trừ khi bạn chọn làm vậy trong phần thảo luận. Bạn không cần đóng đúng công việc thật của mình.", "请默读你的角色卡。除非你在讨论中自己选择，否则不要透露保密信息。你不需要扮演自己的真实工作。"], "Round 1: How do we get there?": ["Vòng 1: Làm thế nào để đến đích?", "第一轮：我们如何达成目标？"], "15 min": ["15 phút", "15 分钟"], "12 min": ["12 phút", "12 分钟"], "5 min": ["5 phút", "5 分钟"], "Step 1.": ["Bước 1.", "步骤 1。"], "Sort the 12 cards across the four stages.": ["Phân loại 12 thẻ vào bốn giai đoạn.", "把 12 张卡片分到四个阶段。"], "Dealer": ["Người chia bài", "荷官"], "Poker table with twelve action cards dealt face up": ["Bàn poker với mười hai thẻ hành động được chia ngửa", "摆有十二张行动卡的扑克桌"], "CfD negotiation": ["Đàm phán CfD", "CfD 谈判"], "Confirm eligibility": ["Xác nhận điều kiện tham gia", "确认资格"], "Internal approval": ["Phê duyệt nội bộ", "内部审批"], "First settlement": ["Thanh toán lần đầu", "首次结算"], "Metering check": ["Kiểm tra đo đếm", "计量核查"], "Screen RE generators": ["Sàng lọc nhà phát điện tái tạo", "筛选可再生能源发电商"], "Registration / notification": ["Đăng ký / thông báo", "登记/备案"], "Build cost model": ["Xây dựng mô hình chi phí", "建立成本模型"], "Non-binding term sheet": ["Term sheet không ràng buộc", "不具约束力的条款清单"], "EVN retail contract amendment": ["Sửa đổi hợp đồng bán lẻ điện với EVN", "修订 EVN 零售合同"], "Collect 12-month hourly load data": ["Thu thập dữ liệu phụ tải theo giờ 12 tháng", "收集 12 个月的逐时负荷数据"], "Accounting treatment check": ["Kiểm tra cách hạch toán kế toán", "核查会计处理方式"], "Step 2": ["Bước 2", "步骤 2"], "Who is responsible for each step? What can you do internally, and what needs outside help?": ["Ai chịu trách nhiệm cho từng bước? Phần nào có thể tự làm nội bộ, phần nào cần hỗ trợ bên ngoài?", "每个步骤由谁负责？哪些可以内部完成，哪些需要外部协助？"], "Step 3": ["Bước 3", "步骤 3"], "Estimate roughly how much time each step takes.": ["Ước tính sơ bộ mỗi bước mất bao lâu.", "粗略估计每个步骤需要多长时间。"], "Round 2: Evaluate your DPPA opportunity and risks": ["Vòng 2: Đánh giá cơ hội và rủi ro DPPA của bạn", "第二轮：评估你们的 DPPA 机会与风险"], "Discuss in role (8 min).": ["Thảo luận theo vai (8 phút).", "按角色讨论（8 分钟）。"], "Each person reads their card and says in one sentence what their department thinks about a DPPA for this factory.": ["Mỗi người đọc thẻ của mình và nói bằng một câu phòng ban mình nghĩ gì về DPPA cho nhà máy này.", "每人阅读自己的角色卡，用一句话说明本部门对该工厂采用 DPPA 的看法。"], "Then answer the hard question your department would ask.": ["Sau đó trả lời câu hỏi khó mà phòng ban của bạn sẽ đặt ra.", "然后回答你所在部门会提出的那个难题。"], "Sustainability": ["Phát triển bền vững", "可持续发展"], "Finance": ["Tài chính", "财务"], "Procurement": ["Thu mua", "采购"], "Legal": ["Pháp chế", "法务"], "Energy / Facilities": ["Năng lượng / Cơ điện", "能源/厂务"], "Brand / Customer": ["Thương hiệu / Khách hàng", "品牌/客户"], "A cloudy month hits. Does the “clean electricity” claim come down?": ["Một tháng nhiều mây ập đến. Tuyên bố “dùng điện sạch” có còn đứng vững không?", "遇到一个多云的月份。“使用清洁电力”的说法还站得住吗？"], "Power prices crash in year 5. Whose name is on the approval?": ["Giá điện lao dốc ở năm thứ 5. Ai là người đã ký duyệt?", "第 5 年电价暴跌。当初批准的人是谁？"], "The developer is sold to a stranger. Do we still shake hands?": ["Chủ đầu tư bị bán cho một bên lạ. Chúng ta có còn bắt tay hợp tác?", "开发商被卖给陌生人。我们还握手合作吗？"], "The rules change in year 3. Who takes the awkward phone call?": ["Quy định thay đổi ở năm thứ 3. Ai sẽ nghe cuộc điện thoại khó xử đó?", "第 3 年规则变了。谁来接那通尴尬的电话？"], "Weekend load is near zero. Are we paying for sunshine nobody uses?": ["Cuối tuần phụ tải gần bằng không. Chúng ta có đang trả tiền cho ánh nắng không ai dùng?", "周末负荷几乎为零。我们是不是在为没人用的阳光付费？"], "The brand wants proof by Friday. What do we actually send?": ["Thương hiệu muốn có bằng chứng trước thứ Sáu. Chúng ta thực sự gửi gì?", "品牌方要求周五前提供证明。我们实际能发什么？"], "As a group, agree:": ["Cả nhóm thống nhất:", "小组共同确定："], "Go": ["Làm", "推进"], "Maybe": ["Có thể", "待定"], "No": ["Không", "不做"], "Risk 1": ["Rủi ro 1", "风险 1"], "Risk 2": ["Rủi ro 2", "风险 2"], "Plus the top 2 risks.": ["Cùng với 2 rủi ro hàng đầu.", "以及最大的两项风险。"], "Round 3: Pitch to the CFO": ["Vòng 3: Thuyết trình trước CFO", "第三轮：向 CFO 做推介"], "One presenter per group, 60 seconds. The room votes for the pitch the CFO should approve.": ["Mỗi nhóm một người trình bày, 60 giây. Cả phòng bỏ phiếu chọn bài thuyết trình mà CFO nên phê duyệt.", "每组一位发言人，限时 60 秒。全场投票选出 CFO 应当批准的推介。"], "Why now?": ["Vì sao là lúc này?", "为什么是现在？"], "RE100 or customer requirement.": ["Mục tiêu RE100 hoặc yêu cầu của khách hàng.", "RE100 目标或客户要求。"], "What we get": ["Chúng ta được gì", "我们能得到什么"], "Price certainty on X% of load.": ["Giá ổn định cho X% phụ tải.", "X% 负荷的价格确定性。"], "Costs and risks": ["Chi phí và rủi ro", "成本与风险"], "Projected cost vs EVN tariff, curtailment, a 10–20 year commitment.": ["Chi phí dự kiến so với giá điện EVN, cắt giảm công suất, cam kết 10–20 năm.", "预计成本与 EVN 电价对比、弃电、10–20 年的长期承诺。"], "What we need from you": ["Chúng tôi cần gì từ anh/chị", "我们需要您做什么"], "Approval for load data work, a non-binding term sheet, HQ sign-off.": ["Phê duyệt việc xử lý dữ liệu phụ tải, term sheet không ràng buộc, và chữ ký duyệt của trụ sở chính.", "批准负荷数据工作、不具约束力的条款清单，以及总部签批。"], "Facilitators and the room play the CFO.": ["Điều phối viên và cả phòng cùng đóng vai CFO.", "主持人和全场一起扮演 CFO。"], "Brace yourselves.": ["Hãy chuẩn bị tinh thần.", "请做好心理准备。"], "The CFO asks hard questions": ["CFO đặt những câu hỏi khó", "CFO 会提出尖锐的问题"], "The CFO": ["CFO", "CFO"], "THE CFO": ["CFO", "CFO"], "Hard question 1": ["Câu hỏi khó 1", "难题 1"], "Hard question 2": ["Câu hỏi khó 2", "难题 2"], "Hard question 3": ["Câu hỏi khó 3", "难题 3"], "Hard question 4": ["Câu hỏi khó 4", "难题 4"], "Hard question 5": ["Câu hỏi khó 5", "难题 5"], "Is this cheaper than EVN, and in which years?": ["Phương án này có rẻ hơn mua điện EVN không, và rẻ hơn ở những năm nào?", "这比 EVN 电价更便宜吗？具体是哪几年？"], "What if the solar farm is curtailed or goes bankrupt?": ["Nếu nhà máy điện mặt trời bị cắt giảm công suất hoặc phá sản thì sao?", "如果光伏电站被限电或破产怎么办？"], "Does this count as a derivative on our balance sheet?": ["Hợp đồng này có bị coi là công cụ phái sinh trên bảng cân đối kế toán của chúng ta không?", "这在我们的资产负债表上会被视为衍生工具吗？"], "Why sign for 15 years when the regulation is still new?": ["Vì sao ký 15 năm khi quy định vẫn còn mới?", "监管还很新，为什么要签 15 年？"], "Can HQ just buy I-RECs instead?": ["Trụ sở chính mua I-REC thay thế được không?", "总部能不能直接买 I-REC 来替代？"], "Now the room votes: which pitch does the CFO approve?": ["Giờ cả phòng bỏ phiếu: bài thuyết trình nào CFO sẽ phê duyệt?", "现在全场投票：CFO 会批准哪一个推介？"], "My takeaway": ["Điều tôi rút ra", "我的收获"], "Step out of your role. What is the real bottleneck in your company?": ["Bước ra khỏi vai của bạn. Điểm nghẽn thực sự trong công ty bạn là gì?", "跳出你的角色。你们公司真正的瓶颈是什么？"], "Session at a glance": ["Tổng quan phiên làm việc", "环节一览"], "Round 1": ["Vòng 1", "第一轮"], "Round 2": ["Vòng 2", "第二轮"], "Round 3": ["Vòng 3", "第三轮"], "15 min · Sort the cards": ["15 phút · Phân loại thẻ", "15 分钟 · 给卡片分类"], "12 min · Evaluate": ["12 phút · Đánh giá", "12 分钟 · 评估"], "15 min · Pitch to the CFO": ["15 phút · Thuyết trình trước CFO", "15 分钟 · 向 CFO 推介"], "Takeaway": ["Điều rút ra", "收获"], "Next, 16:00:": ["Tiếp theo, 16:00:", "接下来，16:00："], "Training wrap-up, with the action roadmap and the per-session survey.": ["Tổng kết khóa đào tạo, cùng lộ trình hành động và khảo sát từng phiên.", "培训总结，包括行动路线图和各场次问卷。"], "Intro": ["Mở đầu", "开场"], "Setup": ["Thiết lập", "设置"], "Roles": ["Vai trò", "角色"], "Next": ["Tiếp", "下一步"], "Go to": ["Đến", "前往"], "Playback": ["Điều khiển phát", "播放控制"], "Previous scene": ["Cảnh trước", "上一幕"], "Next scene": ["Cảnh tiếp theo", "下一幕"], "Pause": ["Tạm dừng", "暂停"], "Play": ["Phát", "播放"], "Restart": ["Phát lại", "重新开始"], "Full screen": ["Toàn màn hình", "全屏"], "Language": ["Ngôn ngữ", "语言"], "Sustainability Manager": ["Trưởng phòng Phát triển Bền vững", "可持续发展经理"], "Trưởng phòng Phát triển Bền vững · 可持续发展经理": ["Sustainability Manager", "Sustainability Manager"], "Finance Manager": ["Trưởng phòng Tài chính", "财务经理"], "Trưởng phòng Tài chính · 财务经理": ["Finance Manager", "Finance Manager"], "Procurement Manager": ["Trưởng phòng Thu mua", "采购经理"], "Trưởng phòng Thu mua · 采购经理": ["Procurement Manager", "Procurement Manager"], "Legal Counsel": ["Phòng Pháp Chế", "法务顾问"], "Phòng Pháp Chế · 法务顾问": ["Legal Counsel", "Legal Counsel"], "Energy / Facilities Manager": ["Trưởng phòng Năng lượng / Cơ điện", "能源/厂务经理"], "Trưởng phòng Năng lượng / Cơ điện · 能源/厂务经理": ["Energy / Facilities Manager", "Energy / Facilities Manager"], "Brand / Customer Liaison": ["Phụ trách Quan hệ Thương hiệu / Khách hàng", "品牌/客户对接负责人"], "Phụ trách Quan hệ Thương hiệu / Khách hàng · 品牌/客户对接负责人": ["Brand / Customer Liaison", "Brand / Customer Liaison"]};
+  var LANG='en';
+  function tr(s){var e=I18N[s];return LANG==='en'||!e?s:e[LANG==='vi'?0:1]}
+  function loadCues(){cues=[].slice.call(scenes[idx].querySelectorAll("[data-cue]")).map(function(el){return{el:el,at:parseFloat(el.getAttribute("data-cue"))*1000,done:false}})}
+  function runCues(){
+    if(reduce||window.innerWidth>760)return;
+    cues.forEach(function(c){
+      if(!c.done&&t>=c.at){c.done=true;try{c.el.scrollIntoView({behavior:"smooth",block:"center"})}catch(e){}}
+    });
+  }
+  scenes.forEach(function(s,i){
+    var b=document.createElement('button');
+    b.className='tab';b.type='button';b.setAttribute('data-n',i+1);b.setAttribute('aria-label',tr('Go to')+' '+tr(s.dataset.label));
+    b.innerHTML='<i class="fill"></i><span>'+tr(s.dataset.label)+'</span>';
+    b.addEventListener('click',function(){go(i)});
+    tabsEl.appendChild(b);tabs.push(b);
+  });
+  var band=document.querySelector(".band"),controls=document.querySelector(".controls");
+  function fit(){
+    stage.style.zoom="";
+    if(window.innerWidth<=760)return;
+    var avail=window.innerHeight-band.offsetHeight-controls.offsetHeight-4;
+    var sc=scenes[idx],s=1;
+    for(var n=0;n<4;n++){
+      var r=stage.getBoundingClientRect().height;
+      var need=r/(parseFloat(stage.style.zoom)||1);
+      var want=Math.max(.4,Math.min(1.3,avail/need));
+      if(Math.abs(want-s)<.01&&n>0)break;
+      s=want;stage.style.zoom=s;
+    }
+    var r2=stage.getBoundingClientRect().height;
+    if(r2>avail&&s>.4){stage.style.zoom=Math.max(.4,s*avail/r2)}
+  }
+  window.addEventListener("resize",fit);
+  document.addEventListener("fullscreenchange",function(){setTimeout(fit,60)});
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fit);
+  setTimeout(fit,400);
+  var fsBtn=document.getElementById("fs");
+  if(document.fullscreenEnabled){fsBtn.hidden=false;fsBtn.addEventListener("click",function(){
+    if(document.fullscreenElement){document.exitFullscreen()}
+    else{try{var p=document.documentElement.requestFullscreen();if(p&&p.catch)p.catch(function(){})}catch(e){}}
+  })}
+  function dur(i){return parseFloat(scenes[i].dataset.dur)*1000}
+  function paint(){
+    tabs.forEach(function(b,i){
+      b.classList.toggle('on',i===idx);
+      b.querySelector('.fill').style.width=i<idx?'100%':(i===idx?Math.min(100,t/dur(idx)*100)+'%':'0');
+    });
+    stage.classList.toggle('paused',!playing);
+    playBtn.textContent=tr(playing?'Pause':'Play');
+    playBtn.setAttribute('aria-label',tr(playing?'Pause':'Play'));
+  }
+  function go(i,keepState){
+    i=Math.max(0,Math.min(scenes.length-1,i));
+    scenes.forEach(function(s,k){s.classList.toggle('active',k===i)});
+    idx=i;t=0;last=null;
+    if(!keepState&&!reduce)playing=true;
+    window.scrollTo(0,0);
+    loadCues();
+    fit();
+    paint();
+  }
+  function tick(ts){
+    if(playing){
+      if(last!==null)t+=ts-last;
+      last=ts;
+      runCues();
+      if(t>=dur(idx)){
+        if(idx<scenes.length-1){go(idx+1,true)}
+        else{t=dur(idx);playing=false;last=null}
+      }
+      paint();
+    }else{last=null}
+    requestAnimationFrame(tick);
+  }
+  playBtn.addEventListener('click',function(){
+    if(!playing&&idx===scenes.length-1&&t>=dur(idx)){go(0);return}
+    playing=!playing;last=null;paint();
+  });
+  document.getElementById('prev').addEventListener('click',function(){go(idx-1)});
+  document.getElementById('next').addEventListener('click',function(){go(idx+1)});
+  document.getElementById('restart').addEventListener('click',function(){go(0)});
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight')go(idx+1);
+    else if(e.key==='ArrowLeft')go(idx-1);
+    else if(e.key===' '&&e.target.tagName!=='BUTTON'){e.preventDefault();playBtn.click()}
+  });
+
+  // Language switch: English text stays in the markup; each text node and label is re-titled from I18N.
+  var LANGS={en:'en',vi:'vi',zh:'zh-Hans'},texts=[],attrs=[];
+  (function(){
+    var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode:function(n){
+      var p=n.parentNode;
+      if(!n.nodeValue.trim()||/^(SCRIPT|STYLE)$/i.test(p.nodeName)||p.closest('svg')||p.closest('#play,#tabs,.lang'))return NodeFilter.FILTER_REJECT;
+      return I18N[n.nodeValue.trim()]?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_REJECT;
+    }});
+    var n;while((n=w.nextNode())){var v=n.nodeValue,k=v.trim();texts.push({n:n,k:k,pre:v.slice(0,v.indexOf(k)),post:v.slice(v.indexOf(k)+k.length)})}
+    [].slice.call(document.querySelectorAll('[aria-label],[alt]')).forEach(function(el){
+      ['aria-label','alt'].forEach(function(a){
+        var v=el.getAttribute(a);
+        if(v&&I18N[v]&&!el.closest('#tabs,.lang')&&el.id!=='play')attrs.push({el:el,a:a,k:v});
+      });
+    });
+  })();
+  var langBtns=[].slice.call(document.querySelectorAll('.lang button'));
+  function setLang(l,save){
+    LANG=l;
+    document.documentElement.lang=LANGS[l];
+    texts.forEach(function(x){x.n.nodeValue=x.pre+tr(x.k)+x.post});
+    attrs.forEach(function(x){x.el.setAttribute(x.a,tr(x.k))});
+    scenes.forEach(function(s,i){
+      tabs[i].querySelector('span').textContent=tr(s.dataset.label);
+      tabs[i].setAttribute('aria-label',tr('Go to')+' '+tr(s.dataset.label));
+    });
+    langBtns.forEach(function(b){b.setAttribute('aria-pressed',b.dataset.lang===l?'true':'false')});
+    document.title=tr('DPPA Deal Room');
+    if(save){try{localStorage.setItem('dealroom-lang',l)}catch(e){}}
+    paint();
+    fit();
+  }
+  langBtns.forEach(function(b){b.addEventListener('click',function(){setLang(b.dataset.lang,true)})});
+  try{var saved=localStorage.getItem('dealroom-lang');if(saved&&LANGS[saved]&&saved!=='en')setLang(saved,false)}catch(e){}
+  loadCues();
+  fit();
+  paint();
+  requestAnimationFrame(tick);
+})();
+</script>
